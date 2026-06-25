@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0e1430" />
+<title>Impostor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="badge">jogo de dedução</div>
+    <h1>Impostor<span class="dot">.</span></h1>
+    <div class="subtitle" id="subtitle">Quem está blefando entre vocês?</div>
+  </header>
+
+  <!-- SCREEN 1: setup (count + mode) -->
+  <section class="screen active" id="screen-setup">
+    <div class="card">
+      <div class="label">Quantos jogadores?</div>
+      <div class="stepper">
+        <button class="step-btn" id="minus" aria-label="Menos">−</button>
+        <div class="count-display" id="count">4</div>
+        <button class="step-btn" id="plus" aria-label="Mais">+</button>
+      </div>
+      <div class="count-hint">mínimo 3 · máximo 10</div>
+
+      <div class="modes">
+        <div class="mode-opt sel" data-mode="knows">
+          <div class="tick"></div>
+          <div>
+            <div class="mtitle">🃏 Palavras · impostor sabe</div>
+            <div class="mdesc">Ele vê “Você é o Impostor!” junto com sua palavra relacionada.</div>
+          </div>
+        </div>
+        <div class="mode-opt" data-mode="blind">
+          <div class="tick"></div>
+          <div>
+            <div class="mtitle">🎭 Palavras · impostor não sabe</div>
+            <div class="mdesc">Ele vê apenas sua palavra, sem aviso. Mais difícil e divertido.</div>
+          </div>
+        </div>
+        <div class="mode-opt" data-mode="phrase">
+          <div class="tick"></div>
+          <div>
+            <div class="mtitle">🗨️ Qual é a frase?</div>
+            <div class="mdesc">Todos recebem uma pergunta. O impostor recebe uma parecida (e não sabe que é o impostor).</div>
+          </div>
+        </div>
+        <div class="mode-opt" data-mode="soletrando">
+          <div class="tick"></div>
+          <div>
+            <div class="mtitle">🐝 Soletrando</div>
+            <div class="mdesc">Competição de soletração. Cada um soletra sua palavra; quem erra perde. O último vence!</div>
+          </div>
+        </div>
+        <div class="mode-opt" data-mode="desenho">
+          <div class="tick"></div>
+          <div>
+            <div class="mtitle">🎨 Desenhe a Palavra</div>
+            <div class="mdesc">Cada um desenha sua palavra. Depois votem para descobrir o impostor.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config exclusiva do Soletrando -->
+      <div id="spell-config" style="display:none;">
+        <div class="label" style="margin-top:26px;">Dificuldade</div>
+        <div class="seg" id="diff-seg">
+          <button class="seg-btn sel" data-diff="facil">Fácil</button>
+          <button class="seg-btn" data-diff="medio">Médio</button>
+          <button class="seg-btn" data-diff="dificil">Difícil</button>
+        </div>
+
+        <div class="label" style="margin-top:22px;">Formato</div>
+        <div class="modes">
+          <div class="fmt-opt mode-opt sel" data-fmt="elim">
+            <div class="tick"></div>
+            <div>
+              <div class="mtitle">💀 Eliminação direta</div>
+              <div class="mdesc">Errou, está fora. O último jogador restante vence.</div>
+            </div>
+          </div>
+          <div class="fmt-opt mode-opt" data-fmt="lives">
+            <div class="tick"></div>
+            <div>
+              <div class="mtitle">❤️ Sistema de vidas</div>
+              <div class="mdesc">Cada jogador começa com 3 vidas. Perde 1 a cada erro; zerou, está fora.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Config exclusiva do Desenhe a Palavra -->
+      <div id="draw-config" style="display:none;">
+        <div class="label" style="margin-top:26px;">O impostor sabe que é?</div>
+        <div class="modes">
+          <div class="draw-know-opt mode-opt sel" data-know="sim">
+            <div class="tick"></div>
+            <div>
+              <div class="mtitle">👀 Impostor sabe</div>
+              <div class="mdesc">Ele vê “Você é o impostor!” junto com sua palavra.</div>
+            </div>
+          </div>
+          <div class="draw-know-opt mode-opt" data-know="nao">
+            <div class="tick"></div>
+            <div>
+              <div class="mtitle">🙈 Impostor não sabe</div>
+              <div class="mdesc">Ele não recebe palavra nenhuma e nenhuma dica — precisa se virar e disfarçar.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="label" style="margin-top:22px;">Eliminação por votação</div>
+        <div class="seg" id="elim-seg">
+          <button class="seg-btn sel" data-elim="nao">Desativada</button>
+          <button class="seg-btn" data-elim="sim">Ativada</button>
+        </div>
+        <div class="count-hint" style="margin-top:8px;">Se ativada, o mais votado é eliminado (“pegue seu banquinho…”) e o jogo continua até pegar o impostor.</div>
+      </div>
+    </div>
+    <button class="btn btn-primary mt" id="to-names">Continuar →</button>
+  </section>
+
+  <!-- SCREEN 2: names -->
+  <section class="screen" id="screen-names">
+    <div class="card">
+      <div class="label">Nomes dos jogadores</div>
+      <div class="names" id="names"></div>
+      <div class="alert" id="name-alert">Por favor, preencha o nome de todos os jogadores.</div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="start">▶ Iniciar Jogo</button>
+      <button class="btn btn-outline" id="back-setup">← Voltar</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: pass device / reveal word -->
+  <section class="screen" id="screen-pass">
+    <div class="card pass">
+      <div id="pass-front">
+        <div class="avatar" id="pass-initial">A</div>
+        <div class="who" id="pass-name">Jogador</div>
+        <div class="progress" id="pass-progress">Jogador 1 de 4</div>
+        <div class="pass-hint" id="front-hint">Pegue o celular e toque para ver sua palavra secreta. Não deixe ninguém espiar!</div>
+        <button class="btn btn-primary" id="show-word">👁 Mostrar palavra</button>
+      </div>
+
+      <div id="pass-back" style="display:none;">
+        <div class="word-stage">
+          <div class="word-box" id="word-box"></div>
+        </div>
+        <div class="pass-hint" id="memorize-hint" style="margin:18px 0 22px;">Memorize sua palavra e passe o celular adiante.</div>
+        <button class="btn btn-ghost" id="next-player">Próximo jogador →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: discussion -->
+  <section class="screen" id="screen-discuss">
+    <div class="card" style="text-align:center;">
+      <div class="big-icon">🗣️</div>
+      <div class="center-title" id="discuss-title">Todos já viram suas palavras</div>
+      <div class="center-text">Agora discutam e tentem descobrir quem é o impostor.</div>
+      <div class="pill" id="standard-box" style="display:none; margin-top:18px;"></div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-ghost" id="show-standard" style="display:none;">📋 Mostrar frase padrão</button>
+      <button class="btn btn-rose" id="reveal-imp">🔍 Revelar Impostor</button>
+      <button class="btn btn-ghost" id="new-round-2">🔄 Nova Rodada</button>
+      <button class="btn btn-outline" id="new-game-2">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 5: reveal -->
+  <section class="screen" id="screen-reveal">
+    <div class="card" style="text-align:center;">
+      <div class="big-icon">🎭</div>
+      <div class="center-text" style="margin-top:14px;">O impostor era…</div>
+      <div class="reveal-name" id="imp-name">—</div>
+      <div class="word-pills" id="word-pills">
+        <div class="pill"><div class="pk" id="group-label">Grupo</div><div class="pv" id="group-word">—</div></div>
+        <div class="pill imp"><div class="pk" id="imp-label">Impostor</div><div class="pv" id="imp-word">—</div></div>
+      </div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="new-round">🔄 Nova Rodada</button>
+      <button class="btn btn-outline" id="new-game">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 6: Soletrando — turno -->
+  <section class="screen" id="screen-spell">
+    <div class="card pass">
+      <!-- front: vez de X -->
+      <div id="spell-front">
+        <div style="margin-bottom:16px;"><span class="round-chip" id="spell-round">Rodada 1</span></div>
+        <div class="avatar" id="spell-initial">A</div>
+        <div class="progress" style="margin-top:14px;">Vez de</div>
+        <div class="who" id="spell-name">Jogador</div>
+        <div class="pass-hint" id="spell-lives-line" style="display:none;"></div>
+        <div class="pass-hint">Fale a palavra em voz alta e depois soletre letra por letra.</div>
+        <button class="btn btn-primary" id="spell-show">👁 Mostrar palavra</button>
+      </div>
+
+      <!-- reveal: a palavra -->
+      <div id="spell-reveal" style="display:none;">
+        <div class="word-kicker">Soletre esta palavra</div>
+        <div class="spell-word" id="spell-word">—</div>
+        <div class="pass-hint" style="margin:14px 0 20px;">O organizador marca o resultado:</div>
+        <div class="stack">
+          <button class="btn btn-primary" id="spell-right">✓ Acertou</button>
+          <button class="btn btn-rose" id="spell-wrong">✗ Errou</button>
+        </div>
+      </div>
+
+      <!-- result: acertou/errou + soletração correta -->
+      <div id="spell-result" style="display:none;">
+        <div class="result-msg" id="spell-result-msg">—</div>
+        <div class="spell-correct" id="spell-result-correct">—</div>
+        <div class="stack mt">
+          <button class="btn btn-primary" id="spell-next">Próximo jogador →</button>
+          <button class="btn btn-ghost" id="spell-ranking">📊 Ver ranking</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 7: Soletrando — ranking / status -->
+  <section class="screen" id="screen-spell-status">
+    <div class="card">
+      <div style="text-align:center; margin-bottom:6px;"><span class="round-chip" id="status-round">Rodada 1</span></div>
+      <div class="status-section">
+        <div class="label">Na disputa</div>
+        <div id="status-active"></div>
+      </div>
+      <div class="status-section" id="status-dead-section">
+        <div class="label">Eliminados</div>
+        <div id="status-dead"></div>
+      </div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="status-back">← Voltar ao jogo</button>
+      <button class="btn btn-ghost" id="status-newround">🔄 Nova Rodada</button>
+      <button class="btn btn-outline" id="status-newgame">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 8: Soletrando — vencedor -->
+  <section class="screen" id="screen-spell-winner">
+    <div class="card" style="text-align:center;">
+      <div class="trophy">🏆</div>
+      <div class="center-text" style="margin-top:12px;">Campeão do Soletrando</div>
+      <div class="winner-name" id="winner-name">—</div>
+      <div class="center-text" id="winner-msg">Parabéns! Você venceu o Soletrando!</div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="winner-newround">🔄 Nova Rodada</button>
+      <button class="btn btn-ghost" id="winner-ranking">📊 Ver ranking</button>
+      <button class="btn btn-outline" id="winner-newgame">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 9: Desenho — ver palavra (com esconder) -->
+  <section class="screen" id="screen-draw-word">
+    <div class="card pass">
+      <div id="dw-front">
+        <div class="avatar" id="dw-initial">A</div>
+        <div class="who" id="dw-name">Jogador</div>
+        <div class="progress" id="dw-progress">Jogador 1 de 4</div>
+        <div class="pass-hint">Pegue o celular e toque para ver sua palavra. Não mostre aos outros!</div>
+        <button class="btn btn-primary" id="dw-show">👁 Mostrar minha palavra</button>
+      </div>
+      <div id="dw-back" style="display:none;">
+        <div class="word-stage"><div class="word-box" id="dw-box"></div></div>
+        <div class="pass-hint" id="dw-memorize" style="margin:18px 0 22px;">Memorize sua palavra para desenhar depois.</div>
+        <div class="stack">
+          <button class="btn btn-ghost" id="dw-hide">🙈 Esconder palavra</button>
+          <button class="btn btn-primary" id="dw-next">Próximo jogador →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 10: Desenho — todos viram -->
+  <section class="screen" id="screen-draw-ready">
+    <div class="card" style="text-align:center;">
+      <div class="big-icon">🎨</div>
+      <div class="center-title">Todos já viram suas palavras</div>
+      <div class="center-text">Agora desenhem suas palavras e tentem descobrir quem é o impostor.</div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="dr-start">🎨 Começar desenho</button>
+      <button class="btn btn-outline" id="dr-newgame">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 11: Desenho — desenhando / discussão -->
+  <section class="screen" id="screen-draw-draw">
+    <div class="card" style="text-align:center;">
+      <div class="big-icon">✏️</div>
+      <div class="center-title">Hora de desenhar!</div>
+      <div class="center-text">Desenhem a palavra recebida no papel, quadro ou tablet. Depois, discutam os desenhos e tentem descobrir quem é o impostor.</div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="dd-vote">🗳️ Iniciar votação</button>
+      <button class="btn btn-rose" id="dd-reveal">🔍 Revelar impostor</button>
+      <button class="btn btn-outline" id="dd-newgame">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 12: Desenho — votação -->
+  <section class="screen" id="screen-draw-vote">
+    <div class="card" style="text-align:center;">
+      <div style="margin-bottom:14px;"><span class="round-chip" id="vote-progress">Voto 1 de 4</span></div>
+      <div class="center-title" id="vote-title">Vez de votar</div>
+      <div class="center-text" id="vote-sub" style="margin-bottom:18px;">Em quem você vota como impostor?</div>
+      <div class="stack" id="vote-options"></div>
+    </div>
+  </section>
+
+  <!-- SCREEN 13: Desenho — resultado da votação -->
+  <section class="screen" id="screen-draw-voteresult">
+    <div class="card" style="text-align:center;">
+      <div class="big-icon" id="vr-icon">🗳️</div>
+      <div class="center-text" style="margin-top:10px;">Mais votado</div>
+      <div class="reveal-name" id="vr-name" style="color:var(--amber);">—</div>
+      <div class="result-msg" id="vr-msg" style="display:none;"></div>
+    </div>
+    <div class="stack mt" id="vr-buttons"></div>
+  </section>
+
+  <!-- SCREEN 14: Desenho — revelação -->
+  <section class="screen" id="screen-draw-reveal">
+    <div class="card" style="text-align:center;">
+      <div class="big-icon">🎭</div>
+      <div class="center-text" id="dreveal-outcome" style="margin-top:14px;">O impostor era…</div>
+      <div class="reveal-name" id="dreveal-name">—</div>
+      <div class="word-pills col">
+        <div class="pill"><div class="pk">Palavra dos jogadores</div><div class="pv" id="dreveal-group">—</div></div>
+        <div class="pill imp"><div class="pk">Palavra do impostor</div><div class="pv" id="dreveal-imp">—</div></div>
+      </div>
+    </div>
+    <div class="stack mt">
+      <button class="btn btn-primary" id="dreveal-newround">🔄 Nova Rodada</button>
+      <button class="btn btn-outline" id="dreveal-newgame">⟲ Novo Jogo</button>
+    </div>
+  </section>
+
+  <footer>Passe o celular · jogue em grupo · descubra o impostor</footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
