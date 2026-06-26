@@ -32,3 +32,5 @@ de jogadores (3 a 10), digite os nomes e selecione um dos modos de jogo.
 
 HTML, CSS e JavaScript puro — sem dependências e sem build. Os três arquivos precisam
 ficar na mesma pasta.
+
+link do jogo:https://euagnes.github.io/jogo-impostor/
